@@ -8,13 +8,24 @@ public class ItemModel {
     private int dangerLevel;
     private double sellPrice;
 
-    public ItemModel(String itemName, String description, int magicId, int quantity, int dangerLevel, double sellPrice) {
+    private String magicName;
+
+    public ItemModel(
+            String itemName,
+            String description,
+            int magicId,
+            int quantity,
+            int dangerLevel,
+            double sellPrice,
+            String magicName
+    ) {
         this.itemName = itemName;
         this.description = description;
         this.magicId = magicId;
         this.quantity = quantity;
         this.dangerLevel = dangerLevel;
         this.sellPrice = sellPrice;
+        this.magicName = magicName;
     }
 
     public String getItemName() {
@@ -63,5 +74,23 @@ public class ItemModel {
 
     public void setSellPrice(double sellPrice) {
         this.sellPrice = sellPrice;
+    }
+
+    public String getMagicName() {
+        return magicName;
+    }
+
+    public void setMagicName(String magicName) {
+        this.magicName = magicName;
+    }
+
+    @Override
+    public String toString() {
+        return "itemName='" + itemName + '\'' +
+                ", description='" + description + '\'' +
+                ", magicId=" + magicId +
+                ", quantity=" + quantity +
+                ", dangerLevel=" + dangerLevel +
+                ", sellPrice=" + String.format("%.2f", sellPrice);
     }
 }

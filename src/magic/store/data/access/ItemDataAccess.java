@@ -13,69 +13,32 @@ import java.util.List;
 public class ItemDataAccess {
     private static final String tableName = "Item";
 
-    public ItemModel create(ItemModel request, Connection connection) throws SQLException {
-        final String SQL = "INSERT INTO Item(ItemName, Description, MagicId, Quantity, DangerLevel, SellPrice) VALUES(?, ?, ?, ?, ?, ?)";
-        try (var pstm = connection.prepareStatement(SQL)) {
-            pstm.setString(1, request.getItemName());
-            pstm.setString(2, request.getDescription());
-            pstm.setInt(3, request.getMagicId());
-            pstm.setInt(4, request.getQuantity());
-            pstm.setInt(5, request.getDangerLevel());
-            pstm.setDouble(6, request.getSellPrice());
-            var affectedRows = pstm.executeUpdate();
-            if (affectedRows == 0) {
-                throw new SQLException(String.format("Creating %s failed, no rows affected.", tableName));
-            }
-
+    public static List<ItemModel> listByCriteria(
+            Integer dangerLevel,
+            Integer magicId,
+            Double price,
+            boolean isGreater,
+            Connection connection
+    ) throws SQLException {
+        String SQL = "SELECT i.*, m.Name as MagicName FROM Item AS i INNER JOIN Magic AS m ON i.MagicId = m.Id WHERE";
+        var hasAnd = false; // Use to append and when multiple conditions are included
+        if (dangerLevel != null) {
+            SQL += ( " DangerLevel = " + dangerLevel );
+            hasAnd = true;
         }
-        return request;
-    }
-
-    public ItemModel update(ItemModel request, Connection connection) throws SQLException {
-        final String SQL = "UPDATE Item SET Description = ?, MagicId = ?, Quantity = ?, DangerLevel = ?, SellPrice = ?, WHERE ItemName = ?";
-        try (var pstm = connection.prepareStatement(SQL)) {
-            pstm.setString(1, request.getDescription());
-            pstm.setInt(2, request.getMagicId());
-            pstm.setInt(3, request.getQuantity());
-            pstm.setInt(4, request.getDangerLevel());
-            pstm.setDouble(5, request.getSellPrice());
-            pstm.setString(6, request.getItemName());
-            var affectedRows = pstm.executeUpdate();
-            if (affectedRows == 0) {
-                throw new SQLException(String.format("Updating %s failed, no rows affected.", tableName));
-            }
+        if (magicId != null) {
+            SQL += hasAnd ? " AND " : "";
+            SQL += ( " MagicId = " + magicId );
+            hasAnd = true;
         }
-        return request;
-    }
 
-    public void delete(ItemModel request, Connection connection) throws SQLException {
-        final String SQL = "DELETE FROM Item WHERE ItemName = ?";
-        try (var pstm = connection.prepareStatement(SQL)) {
-            pstm.setString(1, request.getItemName());
-            var affectedRows = pstm.executeUpdate();
-            if (affectedRows == 0) {
-                throw new SQLException(String.format("Deleting %s failed, no rows affected.", tableName));
-            }
+        if (price != null) {
+            SQL += hasAnd ? " AND " : "";
+            SQL += (" SellPrice " + (isGreater ? ">= " : "<= " ) + price );
         }
-    }
-
-    public ItemModel getByName(ItemModel request, Connection connection) throws SQLException {
-        final String SQL = "SELECT * Item WHERE UPPER(ItemName) = ?";
-        try (var pstm = connection.prepareStatement(SQL)) {
-            pstm.setString(1, request.getItemName().toUpperCase());
-            try (var resultset = pstm.executeQuery()) {
-                if (resultset.next()) {
-                    return createFromRow(resultset);
-                }
-            }
-        }
-        return null;
-    }
-
-    public List<ItemModel> listAll(Connection connection) throws SQLException {
-        final String SQL = "SELECT * Item ORDER BY name ASC";
-        try (var pstm = connection.prepareStatement(SQL)) {
-            try (var resultset = pstm.executeQuery()) {
+        System.out.println(SQL);
+        try (var pstm = connection.createStatement()) {
+            try (var resultset = pstm.executeQuery(SQL)) {
                 var result = new ArrayList<ItemModel>();
                 while (resultset.next()) {
                     result.add(createFromRow(resultset));
@@ -85,14 +48,15 @@ public class ItemDataAccess {
         }
     }
 
-    private ItemModel createFromRow(ResultSet resultSet) throws SQLException {
+    private static ItemModel createFromRow(ResultSet resultSet) throws SQLException {
         return new ItemModel(
                 resultSet.getString("ItemName"),
                 resultSet.getString("Description"),
                 resultSet.getInt("MagicId"),
                 resultSet.getInt("Quantity"),
                 resultSet.getInt("DangerLevel"),
-                resultSet.getDouble("SellPrice")
+                resultSet.getDouble("SellPrice"),
+                resultSet.getString("magicName")
         );
     }
 }

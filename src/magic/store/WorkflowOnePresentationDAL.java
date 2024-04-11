@@ -6,7 +6,7 @@ import java.util.List;
 import java.util.Scanner;
 
 public class WorkflowOnePresentationDAL {
-    public static WorkflowOneDAL GetDAL() throws SQLException {
+    private static WorkflowOneDAL GetDAL() throws SQLException {
         Scanner credentialScanner = new Scanner(System.in);
         System.out.print("Enter username: ");
         // String input
@@ -16,6 +16,7 @@ public class WorkflowOnePresentationDAL {
         var password = credentialScanner.nextLine();
         return new WorkflowOneDAL(userName, new String(password));
     }
+
     public static void main(String[] args) throws SQLException {
         var dal = GetDAL();
         System.out.println("Welcome to your Magic Store, please provide item to register");

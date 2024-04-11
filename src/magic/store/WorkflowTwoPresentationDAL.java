@@ -47,7 +47,6 @@ public class WorkflowTwoPresentationDAL {
         if (shouldSave.trim().equalsIgnoreCase("yes")) {
             saveSearch(rows);
         }
-        System.out.println("Item registered successfully");
     }
 
     private static void printRows(List<ItemModel> rows) {
